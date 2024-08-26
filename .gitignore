@@ -1,3 +1,6 @@
+*.out
+.sh
+.sh~
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -107,6 +110,7 @@ dev.ipynb
 videos/
 templates/
 data/ssd_dataloader.py
+data/config_me.py
 data/datasets/
 doc/visualize.py
 read_results.py

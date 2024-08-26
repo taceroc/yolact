@@ -20,7 +20,10 @@ import torch.utils.data as data
 import numpy as np
 import argparse
 import datetime
-
+torch.cuda.empty_cache()
+import gc
+gc.collect()
+#print(torch.cuda.memory_summary())
 # Oof
 import eval as eval_script
 
@@ -176,7 +179,7 @@ def train():
     dataset = COCODetection(image_path=cfg.dataset.train_images,
                             info_file=cfg.dataset.train_info,
                             transform=SSDAugmentation(MEANS))
-    
+    torch.cuda.empty_cache()
     if args.validation_epoch > 0:
         setup_eval()
         val_dataset = COCODetection(image_path=cfg.dataset.valid_images,
@@ -187,7 +190,7 @@ def train():
     yolact_net = Yolact()
     net = yolact_net
     net.train()
-
+    torch.cuda.empty_cache()
     if args.log:
         log = Log(cfg.name, args.log_folder, dict(args._get_kwargs()),
             overwrite=(args.resume is None), log_gpu_stats=args.log_gpu)
@@ -211,7 +214,7 @@ def train():
     else:
         print('Initializing weights...')
         yolact_net.init_weights(backbone_path=args.save_folder + cfg.backbone.path)
-
+        print(f'max size = {cfg.max_size}')
     optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=args.momentum,
                           weight_decay=args.decay)
     criterion = MultiBoxLoss(num_classes=cfg.num_classes,
@@ -228,7 +231,7 @@ def train():
     net = CustomDataParallel(NetLoss(net, criterion))
     if args.cuda:
         net = net.cuda()
-    
+        torch.cuda.empty_cache()
     # Initialize everything
     if not cfg.freeze_bn: yolact_net.freeze_bn() # Freeze bn so we don't kill our means
     yolact_net(torch.zeros(1, 3, cfg.max_size, cfg.max_size).cuda())
@@ -249,7 +252,7 @@ def train():
     data_loader = data.DataLoader(dataset, args.batch_size,
                                   num_workers=args.num_workers,
                                   shuffle=True, collate_fn=detection_collate,
-                                  pin_memory=True)
+                                  pin_memory=False, generator=torch.Generator(device='cuda'))
     
     
     save_path = lambda epoch, iteration: SavePath(cfg.name, epoch, iteration).get_path(root=args.save_folder)
@@ -260,9 +263,11 @@ def train():
 
     print('Begin training!')
     print()
+    print(f'num epochs: {num_epochs}')
     # try-except so you can use ctrl+c to save early and stop training
     try:
-        for epoch in range(num_epochs):
+        for epoch in range(10):
+            print(epoch)
             # Resume from start_iter
             if (epoch+1)*epoch_size < iteration:
                 continue
@@ -304,6 +309,7 @@ def train():
                 optimizer.zero_grad()
 
                 # Forward Pass + Compute loss at the same time (see CustomDataParallel and NetLoss)
+                #print(torch.cuda.memory_summary())
                 losses = net(datum)
                 
                 losses = { k: (v).mean() for k,v in losses.items() } # Mean here because Dataparallel

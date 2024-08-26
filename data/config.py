@@ -1,6 +1,7 @@
 from backbone import ResNetBackbone, VGGBackbone, ResNetBackboneGN, DarkNetBackbone
 from math import sqrt
 import torch
+from config_me import *
 
 # for making bounding boxes pretty
 COLORS = ((244,  67,  54),
@@ -126,6 +127,21 @@ dataset_base = Config({
     # provide a map from category_id -> index in class_names + 1 (the +1 is there because it's 1-indexed).
     # If not specified, this just assumes category ids start at 1 and increase sequentially.
     'label_map': None
+})
+
+my_custom_dataset = dataset_base.copy({
+    'name': 'fishponds_split',
+
+    # Training images and annotations
+    'train_images': config_mes['loc']+'train',
+    'train_info':   config_mes['loc']+'train_annotations.json',
+
+    # Validation images and annotations.
+    'valid_images': config_mes['loc']+'valid',
+    'valid_info':   config_mes['loc']+'valid_annotations.json',
+
+    'has_gt': True,
+    'class_names': ("fishponds")
 })
 
 coco2014_dataset = dataset_base.copy({
@@ -734,6 +750,12 @@ yolact_darknet53_config = yolact_base_config.copy({
         'preapply_sqrt': False,
         'use_square_anchors': True, # This is for backward compatability with a bug
     }),
+})
+
+yolact_darknet53_fishponds_config = yolact_darknet53_config.copy({
+    'name': 'fishponds_segmentation',
+    'dataset': my_custom_dataset,
+    'num_classes': len(my_custom_dataset.class_names) + 1,
 })
 
 yolact_resnet50_config = yolact_base_config.copy({

@@ -294,12 +294,12 @@ class RandomSampleCrop(object):
             # using entire original input image
             None,
             # sample a patch s.t. MIN jaccard w/ obj in .1,.3,.4,.7,.9
-            (0.1, None),
-            (0.3, None),
-            (0.7, None),
-            (0.9, None),
+            None,
+            None,
+            None,
+            None,
             # randomly sample a patch
-            (None, None),
+            None,
         )
 
     def __call__(self, image, masks, boxes=None, labels=None):
@@ -671,16 +671,16 @@ class SSDAugmentation(object):
         self.augment = Compose([
             ConvertFromInts(),
             ToAbsoluteCoords(),
-            enable_if(cfg.augment_photometric_distort, PhotometricDistort()),
-            enable_if(cfg.augment_expand, Expand(mean)),
-            enable_if(cfg.augment_random_sample_crop, RandomSampleCrop()),
-            enable_if(cfg.augment_random_mirror, RandomMirror()),
-            enable_if(cfg.augment_random_flip, RandomFlip()),
-            enable_if(cfg.augment_random_flip, RandomRot90()),
+            #enable_if(cfg.augment_photometric_distort, PhotometricDistort()),
+            #enable_if(cfg.augment_expand, Expand(mean)),
+            #enable_if(cfg.augment_random_sample_crop, RandomSampleCrop()),
+            #enable_if(cfg.augment_random_mirror, RandomMirror()),
+            #enable_if(cfg.augment_random_flip, RandomFlip()),
+            #enable_if(cfg.augment_random_flip, RandomRot90()),
             Resize(),
-            enable_if(not cfg.preserve_aspect_ratio, Pad(cfg.max_size, cfg.max_size, mean)),
+            #enable_if(not cfg.preserve_aspect_ratio, Pad(cfg.max_size, cfg.max_size, mean)),
             ToPercentCoords(),
-            PrepareMasks(cfg.mask_size, cfg.use_gt_bboxes),
+            #PrepareMasks(cfg.mask_size, cfg.use_gt_bboxes),
             BackboneTransform(cfg.backbone.transform, mean, std, 'BGR')
         ])
 
