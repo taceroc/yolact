@@ -1,7 +1,7 @@
 from backbone import ResNetBackbone, VGGBackbone, ResNetBackboneGN, DarkNetBackbone
 from math import sqrt
 import torch
-from config_me import *
+from .config_me import *
 
 # for making bounding boxes pretty
 COLORS = ((244,  67,  54),
@@ -738,6 +738,12 @@ yolact_im700_config = yolact_base_config.copy({
     }),
 })
 
+yolact_im700_fishponds_config = yolact_im700_config.copy({
+    'name': 'fishponds_segmentation_700',
+    'dataset': my_custom_dataset,
+    'num_classes': len(my_custom_dataset.class_names) + 1,
+})
+
 yolact_darknet53_config = yolact_base_config.copy({
     'name': 'yolact_darknet53',
 
@@ -771,6 +777,23 @@ yolact_resnet50_config = yolact_base_config.copy({
         'use_square_anchors': True, # This is for backward compatability with a bug
     }),
 })
+
+yolact_resnet50_fishponds_config = yolact_base_config.copy({
+    'name': 'fishponds_segmentation_resnet50',
+    'dataset': my_custom_dataset,
+    'num_classes': len(my_custom_dataset.class_names) + 1,
+
+    'backbone': resnet50_backbone.copy({
+        'selected_layers': list(range(1, 4)),
+
+        'pred_scales': yolact_base_config.backbone.pred_scales,
+        'pred_aspect_ratios': yolact_base_config.backbone.pred_aspect_ratios,
+        'use_pixel_scales': True,
+        'preapply_sqrt': False,
+        'use_square_anchors': True, # This is for backward compatability with a bug
+    }),
+})
+
 
 
 yolact_resnet50_pascal_config = yolact_resnet50_config.copy({

@@ -215,6 +215,8 @@ def train():
         print('Initializing weights...')
         yolact_net.init_weights(backbone_path=args.save_folder + cfg.backbone.path)
         print(f'max size = {cfg.max_size}')
+        print(f'learning rate = {args.lr}')
+        print(f'weight decay = {args.decay}')
     optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=args.momentum,
                           weight_decay=args.decay)
     criterion = MultiBoxLoss(num_classes=cfg.num_classes,
@@ -266,7 +268,7 @@ def train():
     print(f'num epochs: {num_epochs}')
     # try-except so you can use ctrl+c to save early and stop training
     try:
-        for epoch in range(10):
+        for epoch in range(num_epochs):
             print(epoch)
             # Resume from start_iter
             if (epoch+1)*epoch_size < iteration:
